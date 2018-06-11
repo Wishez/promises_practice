@@ -90,3 +90,129 @@ test('Go throught generators processing.', t => {
     t.deepEqual([40, 140, 9], firstValue);
     t.deepEqual([560, 630, 9], secondValue);
 });
+
+var firstNumber = 4;
+var secondNumber = 5;
+
+function *one() {
+    firstNumber+=1;
+    yield;
+    secondNumber*=firstNumber;
+    firstNumber = (yield secondNumber)+17;
+}
+
+function *two() {
+    secondNumber-=1;
+    yield;
+    firstNumber = (yield 30)-secondNumber;
+    secondNumber = firstNumber*(yield 7);
+}
+
+function step(generator) {
+    const it = generator();
+    let last;
+
+    return () => {
+        last = it.next(last).value;
+    };
+}
+
+test('Test steps of generators', t => {
+    const first = step(one);
+
+    first();
+    t.is(5, firstNumber);
+
+    first();
+    t.is(5, firstNumber);
+
+    first();
+    t.is(MAIN_ANSWER, firstNumber);
+
+    const second = step(two);
+
+    second();
+    t.is(24, secondNumber);
+
+    second();
+    t.is(MAIN_ANSWER, firstNumber);
+
+    second();
+    t.is(6, firstNumber);
+    t.is(24, secondNumber);
+
+    second();
+    t.is(MAIN_ANSWER, secondNumber); 
+    
+    const actionsQuantity = 3+4;
+    const maxCombinations  = findCombinations(actionsQuantity);
+
+    console.log(`Max results's combinations values for each step call are: ${maxCombinations}`); 
+});
+
+
+test('Test factorial of a some number.', t => {
+    const combinationsQuantity = findCombinations(4);
+    
+    t.is(9, combinationsQuantity);
+});
+
+function findCombinations(actionsQuantity) {
+    const actions = makeRangeArray({
+        length: actionsQuantity - 1,
+        step: 1
+    });
+
+    return actions.reduce(
+        (combinations, actionNumber) => (
+            combinations+factorialOf(actionNumber)
+        )
+        , 0
+    );
+}
+
+test('Test factorial of a some number.', t => {
+    const factorial = factorialOf(4);
+    
+    t.is(24, factorial);
+});
+
+function factorialOf(number) {
+    const numbers = makeRangeArray({
+        length: number,
+        step: 1
+    });
+
+    return numbers.reduce(
+            (factorial, passNumber) => factorial*passNumber
+        , 1);
+
+}
+
+test('Test for creating array.', t => {
+    const arrayInRange = makeRangeArray({
+        length: 4
+    });
+    
+    t.deepEqual([0, 1, 2, 3], arrayInRange);
+});
+
+function makeRangeArray({
+    length,
+    step=0
+}) {
+    return Array(length)
+        .fill(false)
+        .map(
+            (value, index) => index+step
+        );
+}
+
+test('Test for creating array with step.', t => {
+    const arrayInRange = makeRangeArray({
+        length: 5,
+        step: 2
+    });
+    
+    t.deepEqual([2, 3, 4, 5, 6], arrayInRange);
+});
