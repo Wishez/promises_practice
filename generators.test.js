@@ -1,4 +1,5 @@
 import test from 'ava';
+import { LOADIPHLPAPI } from 'dns';
 
 const MAIN_ANSWER = 42;
 
@@ -39,6 +40,10 @@ test('Test iterations of the generator.', t => {
 function *answerOnIt() {
     return 6 * (yield "I'll give you the main answer. Pass 7.");
 }
+
+test('Test for generator type.', t => {
+    t.is("function", typeof answerOnIt);
+});
 
 test('Test first yield value of the generator.', t => {
     const it = answerOnIt();
@@ -216,3 +221,147 @@ test('Test for creating array with step.', t => {
     
     t.deepEqual([2, 3, 4, 5, 6], arrayInRange);
 });
+
+
+
+
+
+// test('Test to put  answer to the generator and get it async.', t => {
+//     var another = '';
+//     const it = logAsyncData();
+
+//     function *logAsyncData() {
+//         try {
+//             const textFromPutAndGet = yield putAndGet(null, MAIN_ANSWER);
+
+//             console.log('textFromPutAndGet:', textFromPutAndGet);
+//         } catch (error) {
+//             console.log(error);
+//         }
+//     };
+
+//     function putAndGet(error, data) {
+//         if (error) {
+//             it.throw(error);
+//         } else {
+//             it.next(data);
+//         }
+//     };
+
+//     it.next();
+
+//     t.is(1, 1);
+// });
+
+function foo(x,y) {
+    return new Promise((resolve, reject) => {
+        if (x && y) {
+            resolve(x * y);
+        } else {
+            reject('Can\'t multiply x and y.');
+        }
+    });
+}
+
+
+
+test('Play with flow of the async generator.', t => {
+    let asyncText;
+    function *main() {
+        try {
+            asyncText = yield foo(6, 7);
+            
+            console.log('asyncText:', asyncText);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    
+    const it = main();
+
+    const p = it.next().value;
+
+    p.then(
+        (text) => {
+        it.next(text);
+    },
+        (error) => {
+        it.throw(error);
+    })
+
+    t.is(1, 1);
+});
+
+function multiply(cb) {
+    let error = null;
+    let result;
+
+    try {
+        result = [].slice.call(arguments, 1).reduce((total, number) => total * number, 1);
+    } catch(e) {
+        error = e.message;
+    }
+
+    cb(error, result);
+}
+
+function thunkify(fn) {
+    return function()  {
+        const args = Array.from(arguments);
+
+        return (cb) => {
+            args.unshift(cb);
+            return fn.apply(null, args);
+        }
+    }
+    
+}
+
+test('Test thunk in work.', t => {
+    const calc = thunkify(multiply);  
+    const askMainQuestion = calc( 2, 3, 7);
+    let localAnswer;
+
+    askMainQuestion(function(error, answer) {
+        if (error) {
+            console.error(error);
+        } else 
+
+        localAnswer = answer; 
+    });
+
+    t.is(MAIN_ANSWER, localAnswer);
+});
+
+
+function asyncMultiply(cb) {
+    const args = [].slice.call(arguments, 1);
+    console.log('args:', args);
+
+    setTimeout(() => {
+        console.log('Will execute');
+        multiply(cb, ...args);
+    }, 1000);
+    
+    multiply(cb, ...args);
+    
+}
+
+test('Test promise with thunk.', async t => {
+    const promiseAnswer = thunkify(asyncMultiply)
+    let getAnswer = promiseAnswer(2, 3)
+    let asyncAnswer;
+
+    getAnswer((error, answer) => {
+        if (error) {
+            console.error(error)
+        } else 
+
+        asyncAnswer = answer;
+        console.log('asyncAnswer:', asyncAnswer);
+    })
+
+    t.not(MAIN_ANSWER, asyncAnswer);
+});
+
+
