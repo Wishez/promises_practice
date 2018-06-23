@@ -334,34 +334,53 @@ test('Test thunk in work.', t => {
 });
 
 
-function asyncMultiply(cb) {
-    const args = [].slice.call(arguments, 1);
-    console.log('args:', args);
+// function asyncMultiply(cb) {
+//     const args = [].slice.call(arguments, 1);
+//     console.log('args:', args);
 
-    setTimeout(() => {
-        console.log('Will execute');
-        multiply(cb, ...args);
-    }, 1000);
-    
-    multiply(cb, ...args);
-    
+//     multiply(args);
+// }
+
+function promisify(fn) {
+    return function() {
+        const args = Array.from(arguments);
+
+        return () => {
+            return new Promise((resolve, reject) => {
+
+                const cb = function (error, value) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(value);
+                    }
+
+                };
+
+                args.unshift(cb);
+                fn.apply(null, args);
+            });
+        }
+        
+        
+    }
 }
 
 test('Test promise with thunk.', async t => {
-    const promiseAnswer = thunkify(asyncMultiply)
+    const promiseAnswer = promisify(multiply);
     let getAnswer = promiseAnswer(2, 3)
     let asyncAnswer;
 
-    getAnswer((error, answer) => {
-        if (error) {
-            console.error(error)
-        } else 
+    getAnswer()
+        .then((answer) => {
+            asyncAnswer = answer;
+            console.log("asyncAnswer:", asyncAnswer);
+        })
+        .catch((error) => {
+            console.error(error);
+        });
 
-        asyncAnswer = answer;
-        console.log('asyncAnswer:', asyncAnswer);
-    })
-
-    t.not(MAIN_ANSWER, asyncAnswer);
+    t.is(void 0, asyncAnswer);
 });
 
 
