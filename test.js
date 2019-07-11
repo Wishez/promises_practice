@@ -3,13 +3,11 @@ import test from 'ava';
 
 const MAIN_ANSWER = 42;
 
-const A = new Promise(function(resolve, reject) {
-    console.log('will resolve first')
+const A = new Promise(function (resolve, reject) {
     resolve('A');
 });
 
-const C = new Promise(function(resolve, reject) {
-    console.log('will resolve second')
+const C = new Promise(function (resolve, reject) {
     resolve(A)
 });
 
@@ -25,11 +23,11 @@ B.then(response => {
     console.log('first: ', response);
 });
 
-const timeoutPromise = function(delay) {
+const timeoutPromise = function (delay) {
     return new Promise((resolve, reject) => {
-       setTimeout(() => {
-           resolve("Timeout!")
-       }, delay)
+        setTimeout(() => {
+            resolve("Timeout!")
+        }, delay)
     });
 }
 
@@ -91,16 +89,16 @@ test('Apart parts of Promises', t => {
 test('Go to Reject state', t => {
     const expectedErrorMessage = "How promises work? 42.";
     const p = new Promise((resolve, reject) => {
-       reject(expectedErrorMessage);
+        reject(expectedErrorMessage);
     });
 
     return p.then(
-       function fulfilled() {
-          return 'No answer!';
-       },
-       errorMessage => {
-           return t.is(errorMessage, expectedErrorMessage);
-       }
+        function fulfilled() {
+            return 'No answer!';
+        },
+        errorMessage => {
+            return t.is(errorMessage, expectedErrorMessage);
+        }
     );
 });
 
@@ -110,9 +108,9 @@ test('Catch the error in chain end go to MAIN ANSWER', t => {
 
     return p
         .then(answer => {
-          empty.answer();
+            empty.answer();
 
-          return 1234;
+            return 1234;
         })
         .then(
             (anwser) => {
@@ -136,7 +134,7 @@ test('Test map function with wrong first parametr.', t => {
         map(1, (value) => {
             // Never execute it.
         });
-    } catch(error) {
+    } catch (error) {
         t.is(error.message, 'You need to put array in the map function.');
     }
 });
@@ -144,14 +142,14 @@ test('Test map function with wrong first parametr.', t => {
 test('Test map function with wrong second value', t => {
     try {
         map([1, 2, 3, 4, 5]);
-    } catch(error) {
+    } catch (error) {
         t.is(error.message, 'You need to put not empty callback to the map function.');
     }
 });
 
 test('Test success map function', t => {
     const iteratedValues = Array(5).fill(6);
-    
+
     const answers = map(iteratedValues, (value) => {
         return 6 * 7;
     });
@@ -164,7 +162,7 @@ test('Test success map function', t => {
 
 test('Check indexes of the map function', t => {
     const iteratedValues = Array(10).fill(true);
-    
+
     const indexes = map(iteratedValues, (trueValue, index) => {
         return index;
     });
@@ -173,7 +171,7 @@ test('Check indexes of the map function', t => {
 
     const everyElementIsInSequance = indexes.every((compareIndex) => {
         const isTrueIndex = index === compareIndex;
-        
+
         index += 1;
 
         return isTrueIndex;
@@ -187,13 +185,13 @@ function assertArray(array) {
     if (!Array.isArray(array)) {
         throw new Error('You need to put array in the map function.');
     }
-} 
+}
 
 function assertEmptyCallback(callback) {
     if (void 0 === callback) {
         throw new Error('You need to put not empty callback to the map function.');
     }
-} 
+}
 
 function map(values, callback) {
     assertArray(values);
@@ -212,7 +210,3 @@ function map(values, callback) {
 
     return results;
 };
-
-
-
-

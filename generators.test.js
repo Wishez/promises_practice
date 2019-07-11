@@ -1,21 +1,18 @@
 import test from 'ava';
-import { LOADIPHLPAPI } from 'dns';
 
 const MAIN_ANSWER = 42;
 
-const incrementIncapsulatedX = (function() {
+const incrementIncapsulatedX = (function () {
     let _x = 0;
 
-    function *incrementX() {
+    function* incrementX() {
         _x++;
-        
+
         yield _x;
     }
 
     return incrementX;
-}());
-
-
+})();
 
 test('Test default values of the generator.', t => {
     const it = incrementIncapsulatedX();
@@ -32,44 +29,39 @@ test('Test iterations of the generator.', t => {
     t.is(1, one.value);
 
     const two = it.next();
-    
+
     t.true(two.done);
 });
 
-
-function *answerOnIt() {
+function* answerOnIt() {
     return 6 * (yield "I'll give you the main answer. Pass 7.");
 }
 
 test('Test for generator type.', t => {
-    t.is("function", typeof answerOnIt);
+    t.is('function', typeof answerOnIt);
 });
 
 test('Test first yield value of the generator.', t => {
     const it = answerOnIt();
 
     const yieldValue = it.next();
-    
+
     t.is("I'll give you the main answer. Pass 7.", yieldValue.value);
-    
+
     const answer = it.next(7);
 
     t.is(MAIN_ANSWER, answer.value);
     t.true(answer.done);
-
 });
-
 
 var z = 5;
 
-function *run() {
+function* run() {
     var x = yield 5;
-    z+=2;
-    var y = yield (x*z);
-    return [x, y, z];    
+    z += 2;
+    var y = yield x * z;
+    return [x, y, z];
 }
-
-
 
 test('Go throught generators processing.', t => {
     const first = run();
@@ -85,11 +77,11 @@ test('Go throught generators processing.', t => {
     secondValue = second.next(firstValue * 2).value;
 
     t.is(9, z);
-    t.is(5*8*7, firstValue);
-    t.is(280*2*9, secondValue);
+    t.is(5 * 8 * 7, firstValue);
+    t.is(280 * 2 * 9, secondValue);
 
-    firstValue = first.next(firstValue/2).value;
-    secondValue = second.next(secondValue/8).value;
+    firstValue = first.next(firstValue / 2).value;
+    secondValue = second.next(secondValue / 8).value;
 
     t.is(9, z);
     t.deepEqual([40, 140, 9], firstValue);
@@ -99,18 +91,18 @@ test('Go throught generators processing.', t => {
 var firstNumber = 4;
 var secondNumber = 5;
 
-function *one() {
-    firstNumber+=1;
+function* one() {
+    firstNumber += 1;
     yield;
-    secondNumber*=firstNumber;
-    firstNumber = (yield secondNumber)+17;
+    secondNumber *= firstNumber;
+    firstNumber = (yield secondNumber) + 17;
 }
 
-function *two() {
-    secondNumber-=1;
+function* two() {
+    secondNumber -= 1;
     yield;
-    firstNumber = (yield 30)-secondNumber;
-    secondNumber = firstNumber*(yield 7);
+    firstNumber = (yield 30) - secondNumber;
+    secondNumber = firstNumber * (yield 7);
 }
 
 function step(generator) {
@@ -147,84 +139,72 @@ test('Test steps of generators', t => {
     t.is(24, secondNumber);
 
     second();
-    t.is(MAIN_ANSWER, secondNumber); 
-    
-    const actionsQuantity = 3+4;
-    const maxCombinations  = findCombinations(actionsQuantity);
+    t.is(MAIN_ANSWER, secondNumber);
 
-    console.log(`Max results's combinations values for each step call are: ${maxCombinations}`); 
+    const actionsQuantity = 3 + 4;
+    const maxCombinations = findCombinations(actionsQuantity);
+
+    console.log(
+        `Max results's combinations values for each step call are: ${maxCombinations}`
+    );
 });
-
 
 test('Test factorial of a some number.', t => {
     const combinationsQuantity = findCombinations(4);
-    
+
     t.is(9, combinationsQuantity);
 });
 
 function findCombinations(actionsQuantity) {
     const actions = makeRangeArray({
         length: actionsQuantity - 1,
-        step: 1
+        step: 1,
     });
 
     return actions.reduce(
-        (combinations, actionNumber) => (
-            combinations+factorialOf(actionNumber)
-        )
-        , 0
+        (combinations, actionNumber) => combinations + factorialOf(actionNumber),
+        0
     );
 }
 
 test('Test factorial of a some number.', t => {
     const factorial = factorialOf(4);
-    
+
     t.is(24, factorial);
 });
 
 function factorialOf(number) {
     const numbers = makeRangeArray({
         length: number,
-        step: 1
+        step: 1,
     });
 
-    return numbers.reduce(
-            (factorial, passNumber) => factorial*passNumber
-        , 1);
-
+    return numbers.reduce((factorial, passNumber) => factorial * passNumber, 1);
 }
 
 test('Test for creating array.', t => {
     const arrayInRange = makeRangeArray({
-        length: 4
+        length: 4,
     });
-    
+
     t.deepEqual([0, 1, 2, 3], arrayInRange);
 });
 
 function makeRangeArray({
     length,
-    step=0
+    step = 0
 }) {
-    return Array(length)
-        .fill(false)
-        .map(
-            (value, index) => index+step
-        );
+    return Array(length).fill(false).map((value, index) => index + step);
 }
 
 test('Test for creating array with step.', t => {
     const arrayInRange = makeRangeArray({
         length: 5,
-        step: 2
+        step: 2,
     });
-    
+
     t.deepEqual([2, 3, 4, 5, 6], arrayInRange);
 });
-
-
-
-
 
 // test('Test to put  answer to the generator and get it async.', t => {
 //     var another = '';
@@ -253,41 +233,41 @@ test('Test for creating array with step.', t => {
 //     t.is(1, 1);
 // });
 
-function foo(x,y) {
+function foo(x, y) {
     return new Promise((resolve, reject) => {
         if (x && y) {
             resolve(x * y);
         } else {
-            reject('Can\'t multiply x and y.');
+            reject("Can't multiply x and y.");
         }
     });
 }
 
-
-
 test('Play with flow of the async generator.', t => {
     let asyncText;
-    function *main() {
+
+    function* main() {
         try {
             asyncText = yield foo(6, 7);
-            
+
             console.log('asyncText:', asyncText);
         } catch (error) {
             console.error(error);
         }
     }
-    
+
     const it = main();
 
     const p = it.next().value;
 
     p.then(
-        (text) => {
-        it.next(text);
-    },
-        (error) => {
-        it.throw(error);
-    })
+        text => {
+            it.next(text);
+        },
+        error => {
+            it.throw(error);
+        }
+    );
 
     t.is(1, 1);
 });
@@ -297,8 +277,10 @@ function multiply(cb) {
     let result;
 
     try {
-        result = [].slice.call(arguments, 1).reduce((total, number) => total * number, 1);
-    } catch(e) {
+        result = [].slice
+            .call(arguments, 1)
+            .reduce((total, number) => total * number, 1);
+    } catch (e) {
         error = e.message;
     }
 
@@ -306,33 +288,29 @@ function multiply(cb) {
 }
 
 function thunkify(fn) {
-    return function()  {
+    return function () {
         const args = Array.from(arguments);
 
-        return (cb) => {
+        return cb => {
             args.unshift(cb);
             return fn.apply(null, args);
-        }
-    }
-    
+        };
+    };
 }
 
 test('Test thunk in work.', t => {
-    const calc = thunkify(multiply);  
-    const askMainQuestion = calc( 2, 3, 7);
+    const calc = thunkify(multiply);
+    const askMainQuestion = calc(2, 3, 7);
     let localAnswer;
 
-    askMainQuestion(function(error, answer) {
+    askMainQuestion(function (error, answer) {
         if (error) {
             console.error(error);
-        } else 
-
-        localAnswer = answer; 
+        } else localAnswer = answer;
     });
 
     t.is(MAIN_ANSWER, localAnswer);
 });
-
 
 // function asyncMultiply(cb) {
 //     const args = [].slice.call(arguments, 1);
@@ -342,45 +320,49 @@ test('Test thunk in work.', t => {
 // }
 
 function promisify(fn) {
-    return function() {
+    return function () {
         const args = Array.from(arguments);
 
         return () => {
             return new Promise((resolve, reject) => {
-
                 const cb = function (error, value) {
                     if (error) {
                         reject(error);
                     } else {
                         resolve(value);
                     }
-
                 };
 
                 args.unshift(cb);
                 fn.apply(null, args);
             });
-        }
-        
-        
-    }
+        };
+    };
 }
 
 test('Test promise with thunk.', async t => {
     const promiseAnswer = promisify(multiply);
-    let getAnswer = promiseAnswer(2, 3)
+    let getAnswer = promiseAnswer(2, 3);
     let asyncAnswer;
 
     getAnswer()
-        .then((answer) => {
+        .then(answer => {
             asyncAnswer = answer;
-            console.log("asyncAnswer:", asyncAnswer);
         })
-        .catch((error) => {
+        .catch(error => {
             console.error(error);
         });
 
     t.is(void 0, asyncAnswer);
 });
 
+test('Test Promise flow.', t => {
+    let response = undefined;
 
+    Promise.resolve(MAIN_ANSWER)
+        .then(Promise.resolve(2), res => res + 3)
+        .catch(res => res + 4)
+        .then(res => response = res); // 1
+
+    t.is(void 0, response);
+});
